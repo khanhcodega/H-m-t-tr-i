@@ -1,0 +1,333 @@
+#include <windows.h> //thư viện
+#include <GL/gl.h>   //
+#include <math.h>    //
+#include <GL/glu.h>  //
+#include <GL/glut.h> //
+#include <time.h>    //
+#include <stdlib.h>  //
+using namespace std;
+static float aa = 0, b = 0, c = 0, d = 0, e = 0, f = 0, g = 0, h = 0, dd = 0; // biến tốc độ
+// màu
+GLfloat black[] = {0.0f, 0.0f, 0.0f, 1.0f}; // mau Den
+GLfloat white[] = {1.0f, 1.0f, 1.0f, 1.0f}; // mau trang
+GLfloat blue[] = {0.0f, 0.0f, 0.9f, 1.0f};  // mau Xanh
+GLfloat er[] = {0.0f, 5.0f, 0.9f, 1.0f};
+GLfloat yellow[] = {0.7f, 0.2f, 0.0f, 1.0f}; // mau Vang
+GLfloat qAmb[] = {0., 0., 0., .0};
+GLfloat qDif[] = {1.0, 1.0, 1.0, 1.0};
+GLfloat qSpec[] = {.0, .0, .0, .10};
+GLfloat qPos[] = {0, 0, 0, 0.1};
+GLfloat sc[8] = {0.295, 0.40, 0.50, 0.0, 0.0, .0, .0, .0};
+GLfloat saotho[] = {1, 0.1, 0.6}; // màu sao thổ
+
+static float quay1 = 1; // cài đặt độ co dãn của góc nhìn
+int changeCamera = 0;   // góc nhìn
+int zoom = 5;           // khoảng cách nhìn vật
+// chu
+// GLubyte pt[22] = {0x3f, 0xc0, 0x7e, 0x00, 0xff, 0xf8, 0xff, 0xe0, 0x3f, 0xfc, 0x70, 0xff, 0x3f, 0xfc, 0xff, 0xe0, 0xff, 0xf8, 0x7e, 0x00, 0x3f, 0xc0};
+
+double angular = 2 * 3.14 / 60; // vòng  tròn làm vành đai
+void init(void)
+{
+    glClearColor(0.0, 0.0, 0.0, 0.0); // Anh nen mau den
+    gluOrtho2D(0, 699, 0, 699);
+    glPointSize(1.0);
+    glLineWidth(2.0);
+}
+void initLighting() // khai báo độ sáng tối của hành tinh
+{
+    glMaterialfv(GL_FRONT, GL_AMBIENT, yellow);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, yellow);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT7);
+    glLightfv(GL_LIGHT7, GL_AMBIENT, qAmb);
+    glLightfv(GL_LIGHT7, GL_DIFFUSE, qDif);
+    glLightfv(GL_LIGHT7, GL_SPECULAR, qSpec);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, yellow);
+}
+/*void background()// khung hình màu đen
+{
+    glBegin(GL_QUADS);
+    glColor3f(0.0, 0.00, 0.00);
+    glVertex3f(-01.00, 01.00, 1);
+    glColor3f(.20, 0.0, 0.70);
+    glVertex3f(01.00, 1.00, 1);
+    glColor3f(0, 0.0, 0.0);
+    glVertex3f(1.00, -1.00, 1);
+    glColor3f(.70, .10, .20);
+    glVertex3f(-1.00, -1.00, 1);
+    glEnd();
+}*/
+void cricle(float x, float y, float R)
+{ // quỹ đạo các chòm sao
+    float PI = 3.14;
+    glColor3f(1.0, 1.0, 1.0);
+
+    glBegin(GL_LINE_LOOP);
+    for (int i = 0; i < 360; i++)
+        glVertex3f(R * cos(2 * PI * i / 360) + x, R * sin(2 * PI * i / 360) + y, 0.0);
+    // glVertex3f(R*cos(i) + x,R*sin(i) +y ,0.0);
+    glEnd();
+}
+
+void display(void) // bắt dầu vẽ
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // background();
+    glLoadIdentity();
+    glColor3f(1.0, 1.0, 1.0);
+    glScalef(quay1, quay1, 1);
+    // hướng nhìn
+    if (changeCamera == 0) // khung nhìn mặc định từ trục y
+    {
+        glColor3f(1.0, 1.0, 1.0);
+        gluLookAt(0.0, zoom, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+        glPushMatrix();
+        cricle(0, 0, 0.5);  // Quỹ đạo sao thủy
+        cricle(0, 0, 0.8);  // sao kim
+        cricle(0, 0, 1.15); // trái đất
+        cricle(0, 0, 1.5);  // sao hỏa
+        cricle(0, 0, 1.9);  // sao mộc
+        cricle(0, 0, 2.35); // sao thổ
+        cricle(0, 0, 2.75); // sao thiên vương
+        cricle(0, 0, 3.1);  // sao hải vương
+        glPopMatrix();
+        glColor3f(1.0, 1.0, 1.0);
+    }
+    if (changeCamera == 1) // khung nhìn từ trục z
+    {
+        glColor3f(1.0, 1.0, 1.0);
+        gluLookAt(0.0, 0.0, zoom, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+        glPushMatrix();
+        glRotated(90, 1, 0, 0);
+        cricle(0, 0, 0.5);  // Quỹ đạo sao thủy
+        cricle(0, 0, 0.8);  // sao kim
+        cricle(0, 0, 1.15); // trái đất
+        cricle(0, 0, 1.5);  // sao hỏa
+        cricle(0, 0, 1.9);  // sao mộc
+        cricle(0, 0, 2.35); // sao thổ
+        cricle(0, 0, 2.75); // sao thiên vương
+        cricle(0, 0, 3.1);  // sao hải vương
+        glPopMatrix();
+    }
+    if (changeCamera == 2) // khung nhìn từ góc xéo của y và z
+    {
+        glPushMatrix();
+        cricle(0, 0, 0.5);  // Quỹ đạo sao thủy
+        cricle(0, 0, 0.8);  // sao kim
+        cricle(0, 0, 1.15); // trái đất
+        cricle(0, 0, 1.5);  // sao hỏa
+        cricle(0, 0, 1.9);  // sao mộc
+        cricle(0, 0, 2.35); // sao thổ
+        cricle(0, 0, 2.75); // sao thiên vương
+        cricle(0, 0, 3.1);  // sao hải vương
+        glPopMatrix();
+        gluLookAt(0.0, zoom, 0.00001, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    }
+
+    
+    glPushMatrix();
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_COLOR_MATERIAL);
+    // bắt đầu khai báo độ lớn ,màu ,hướng xoay, tịnh tiến của các hành tinh trừ mặt trời
+    //  mặt trời
+    glPushMatrix();
+    glColor3f(0.7, 0.5, 0.0);
+    glLightfv(GL_LIGHT7, GL_POSITION, qPos);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, yellow);
+    glutSolidSphere(0.3, 100, 100);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, black);
+    glPopMatrix();
+    // Sao  Thủy
+    glPushMatrix();
+    glRotated(b, 0, 1, 0);
+    glTranslated(0.5, 0, 0);
+    glRotated(dd, 0, 1, 0);
+    glColor3f(0.55, 0, 0.55);
+    glutSolidSphere(0.1, 100, 100);
+    glPopMatrix();
+    // Sao Kim
+    glPushMatrix();
+    glRotated(c, 0, 1, 0);
+    glTranslated(0.8, 0, 0);
+    glRotated(dd, 0, 1, 0);
+    glColor3f(0.9, 0.1, 0.0);
+    glutSolidSphere(0.12, 100, 100);
+    glPopMatrix();
+    // TRái Đất
+    glPushMatrix();
+    glRotated(aa, 0, 1, 0);
+    glTranslated(1.15, 0, 0);
+    glRotated(dd, 0, 1, 0);
+    glColor3f(0.0, 0.1, 0.7);
+    glutSolidSphere(0.14, 100, 100);
+    // mặt trăng
+    glRotated(b, 0, 1, 1);
+    glTranslated(0.2, 0, 0);
+    glColor3f(1.0, 1.0, 1.0);
+    glutSolidSphere(0.05, 100, 100);
+    glPopMatrix();
+    // Sao hỏa
+    glPushMatrix();
+    glRotated(d, 0, 1, 0);
+    glTranslated(1.5, 0, 0);
+    glRotated(dd, 0, 1, 0);
+    glColor3f(1, 0.1, 0.6);
+    glutSolidSphere(0.08, 100, 100);
+    glPopMatrix();
+    // Sao Mộc
+    glPushMatrix();
+    glRotated(e, 0, 1, 0);
+    glTranslated(1.9, 0, 0);
+    glRotated(dd, 0, 1, 0);
+    glColor3f(0.4, 0.2, 0.0);
+    glutSolidSphere(0.2, 100, 100);
+    glPopMatrix();
+    // Sao Thổ
+    glPushMatrix();
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, saotho);
+    glRotated(f, 0, 1, 0);
+    glTranslated(2.35, 0, 0);
+    glRotated(dd, 0, 1, 0);
+    glColor3f(0.9, 0.0, 0.0);
+    glutSolidSphere(0.18, 100, 100);
+    glRotated(90, 1, 0, 0);
+    // vanh dai sao thổ
+    glBegin(GL_QUAD_STRIP); // vẽ theo vector kế tiếp liền kề
+    glColor3f(1.0, 1.0, 1.0);
+    for (int i = 0; i <= 360; i++)
+    {
+        glVertex3f(sin(i * 3.1416 / 180) * 0.2, cos(i * 3.1416 / 180) * 0.2, 0); // vẽ ra 2 vòng tròn để nó có thể kết nối lại thành vành dai
+        glVertex3f(sin(i * 3.1416 / 180) * 0.3, cos(i * 3.1416 / 180) * 0.3, 0); // vòng tròn trong và vòng tròn ngoài vành đai
+    }
+    glEnd();
+    glPopMatrix();
+    // Sao Thiên Vương
+    glPushMatrix();
+    glRotated(g, 0, 1, 0);
+    glTranslated(2.75, 0, 0);
+    glRotated(dd, 0, 1, 0);
+    glColor3f(0.0, 0.5, 0.9);
+    glutSolidSphere(0.16, 100, 100);
+    glPopMatrix();
+    // Sao Hải Vương
+    glPushMatrix();
+    glRotated(h, 0, 1, 0);
+    glTranslated(3.1, 0, 0);
+    glRotated(dd, 0, 1, 0);
+    glColor3f(0.0, 0.0, 0.9);
+    glutSolidSphere(0.16, 100, 100);
+    glPopMatrix();
+    glPushMatrix();
+    // vẽ bầu trời sao
+    // sử dụng hàm random để tạo ngãu nhiên vị trí và màu ngôi sao
+    srand((unsigned)time(NULL));
+    glPointSize(2); // độ lớn của điẻm
+    for (float f = 0; f < 10; f = f + 0.01)
+    {
+        glColor3f(-1 + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (2))), -1 + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (2))), -1 + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (2))));
+        glBegin(GL_POINTS);
+        glVertex3f(f + -6 + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (-3 + 6))), f + -6 + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (-3 + 6))), f + -6 + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (-3 + 6))));
+        glVertex3f(f + 3 + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (6 - 3))), f + 3 + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (6 - 3))), f + 3 + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (6 - 3))));
+        // glVertex3f(f + -4 + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (2 + 4))), f + -2 + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (2 + 4))), f + -2 + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (6))));
+        glEnd();
+    }
+    glPopMatrix();
+    glPopMatrix();
+    glutSwapBuffers(); // reset lại mỗi khi có thay đổi
+}
+void reshape(int w, int h)
+{
+    glViewport(0, 0, (GLsizei)w, (GLsizei)h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    if (w <= h)
+        glOrtho(-1.5, 1.5, -1.5 * (GLfloat)h / (GLfloat)w,
+                1.5 * (GLfloat)h / (GLfloat)w, -10.0, 10.0);
+    else
+        glOrtho(-1.5 * (GLfloat)w / (GLfloat)h,
+                1.5 * (GLfloat)w / (GLfloat)h, -1.5, 1.5, -10.0, 10.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+void quay(void) // tạo tốc độ quay của các hành tinh
+{
+    aa = aa + 0.1;
+    b = b + 0.41;
+    c = c + 0.17;
+    d = d + 0.05;
+    e = e + 0.08;
+    f = f + 0.04;
+    g = g + 0.02;
+    h = h + 0.01;
+    dd = (dd + 10) / 360;
+    if (aa > 360.0)
+        aa = aa - 360.0;
+    glutPostRedisplay();
+}
+
+void Mouse(int button, int state, int x, int y) // bắt sự kiện con trỏ chuột
+{
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) // ấn chuột trái để tăng tầm nhìn khi đạt giới hạn nó sẽ quay ngược hình và thu nhỏ
+    {
+        quay1 = (quay1 + 0.1);
+        glutPostRedisplay();
+    }
+    if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) // ngược lại vs chuột trái
+    {
+        quay1 = (quay1 - 0.1);
+        glutPostRedisplay();
+    }
+}
+void keyInput(unsigned char key, int x, int y) // bắt sự kiện từ bàn phím
+{
+    switch (key)
+    {
+    case 27:
+        exit(0);
+        break;
+    case 'a': // ấn phím a hoặc A đê quay
+        glutIdleFunc(quay);
+        glutPostRedisplay();
+        break;
+    case 's':
+        glutIdleFunc(NULL);
+        break;
+    case 'A':
+        glutIdleFunc(quay);
+        glutPostRedisplay();
+        break;
+    case 'S': // nhấn s hoặc S để dừng
+        glutIdleFunc(NULL);
+        break;
+
+    case '1': // nhấn 1, 2, 3 là lần lượt các khung hình được thiết lập ở trên
+        changeCamera = 0;
+        glutPostRedisplay();
+        break;
+    case '2':
+        changeCamera = 1;
+        glutPostRedisplay();
+        break;
+    case '3':
+        changeCamera = 2;
+        glutPostRedisplay();
+        break;
+    }
+}
+int main(int argc, char **argv) // khai báo các hàm chính
+{
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+    glutInitWindowSize(1150, 850); // đô lớn của cửa sô
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow("He Mat Troi (nhom 9 )");
+    initLighting();
+    init();
+    glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
+    glutMouseFunc(Mouse);
+    glutKeyboardFunc(keyInput);
+    glutMainLoop();
+    return 0;
+}
